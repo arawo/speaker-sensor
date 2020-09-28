@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="./lib/geolib.min.js"></script>
+    <style type="text/css">
+        .nearby {
+            background-color: #ffbb44
+        }
+
+        .warning {
+            background-color: #ff6688
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <h1>鯖江市の 医療施設・保育園・学校 センサー</h1>
+        <input type="text" v-model="keyword" placeholder="フィルター">
+        <input type="text" v-model="nearbydst" placeholder="検知範囲(m)">
+        <input type="text" v-model="warndst" placeholder="警告範囲(m)">
+        {{nearbydst}} {{warndst}}
+        <div>件数：{{ filteredlist.length }} / {{ list.length }}</div>
+        <transition-group name="list" tag="table">
+            <todo-item v-for="item in filteredlist" :key="item.uri.value" :uri="item.uri.value" :name="item.name.value"
+                :lat="item.lat.value" :lng="item.lng.value" :dst="item.dst.value"
+                v-bind:class="classbydst(item.dst.value)"></todo-item>
+        </transition-group>
+    </div>
+
+    <script>
+        Vue.component('todo-item', {
+            props: ['uri', 'name', 'lat', 'lng', 'dst'],
+            template: `
+            <tr>
+                <td><a v-bind:href="uri">{{ name }}</a></td>
+                <td>{{ lat }},{{ lng }} {{ dst }}m</td>
+            </tr>'
+        `
+        })
+
+        new Vue({
+            el: '#app',
+            data: {
+                list: [],
+                keyword: "",
+                nearbydst: 600,
+                warndst: 300,
+                lat: 35.943297,
+                lng: 136.1865133,
+                accu: 0,
+                date: null,
+            },
+            mounted: async function () {
+
+                setInterval(() => {
+                    this.updategeom()
+                }, 3000)
+
+                const q1 = this.getmedicalinstitutequery()
+                const q2 = this.getschoolquery()
+
+                d1 = await axios.get(q1)
+                d2 = await axios.get(q2)
+
+                this.list.push(...d1.data.results.bindings)
+                this.list.push(...d2.data.results.bindings)
+            },
+            methods: {
+                getmedicalinstitutequery: function () {
+                    let query = `
+                    prefix schema: <http://www.w3.org/2000/01/rdf-schema#>
+                    prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+                    select ?uri ?name ?lat ?lng {
+                        ?uri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/jrrk#MedicalInstitute>;
+                        schema:label ?name;
+                        geo:lat ?lat;
+                        geo:long ?lng.
+                        filter(contains(str(?name),'病院'))
+                    }`
+
+                    // querySAPRQL
+                    const baseurl = "https://sparql.odp.jig.jp/data/sparql"
+                    const url = baseurl + "?query=" + encodeURIComponent(query) + "&output=json"
+
+                    return url
+                },
+                getschoolquery: function () {
+                    let query = `
+                    prefix schema: <http://www.w3.org/2000/01/rdf-schema#>
+                    prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+                    select ?uri ?name ?lat ?lng {
+                        ?uri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/jrrk#CivicFacility>;
+                        schema:label ?name;
+                        geo:lat ?lat;
+                        geo:long ?lng.
+                        filter(contains(str(?name), '保育') || contains(str(?name), '小学校')|| contains(str(?name), '中学校') || contains(str(?name), '高校'))
+                    }`
+
+                    // querySAPRQL
+                    const baseurl = "https://sparql.odp.jig.jp/data/sparql"
+                    const url = baseurl + "?query=" + encodeURIComponent(query) + "&output=json"
+
+                    return url
+                },
+                classbydst: function (dst) {
+                    if (dst < this.nearbydst) {
+                        if (dst < this.warndst) {
+                            return { warning: true }
+                        }
+                        return { nearby: true }
+                    }
+                    return {}
+                },
+                updategeom: function () {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        this.lat = position.coords.latitude;
+                        this.lng = position.coords.longitude;
+                        this.accu = position.coords.accuracy;
+                        this.date = new Date(position.timestamp);
+                    });
+                }
+            },
+            computed: {
+                listwithdist: function () {
+                    const res = []
+                    const dist = this.lastGeom
+                    for (const i of this.list) {
+                        i.dst = {
+                            value: geolib.getDistance(
+                                { latitude: this.lat, longitude: this.lng },
+                                { latitude: i.lat.value, longitude: i.lng.value })
+                        };
+                        res.push(i)
+                    }
+                    res.sort(function (a, b) { return a.dst.value - b.dst.value })
+                    return res
+                },
+                filteredlist: function () {
+                    const res = []
+                    for (const i of this.listwithdist) {
+                        for (const v in i) {
+                            if (new String(i[v].value).indexOf(this.keyword) !== -1) {
+                                res.push(i)
+                                break
+                            }
+                        }
+                    }
+                    console.log(res)
+                    return res
+                }
+            }
+        })
+    </script>
+
+</body>
+
+</html>
