@@ -34,6 +34,7 @@
                 :lat="item.lat.value" :lng="item.lng.value" :dst="item.dst.value"
                 v-bind:class="classbydst(item.dst.value)"></todo-item>
         </transition-group>
+        <div>CC BY arawo</div>
     </div>
 
     <script>
@@ -42,7 +43,8 @@
             template: `
             <tr>
                 <td><a v-bind:href="uri">{{ name }}</a></td>
-                <td>{{ lat }},{{ lng }} {{ dst }}m</td>
+                <td>{{ lat }},{{ lng }}</td>
+                <td>{{dst}}m</td>
             </tr>'
         `
         })
@@ -169,7 +171,6 @@
                             }
                         }
                     }
-                    console.log(res)
                     return res
                 }
             }
