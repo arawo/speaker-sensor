@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
+    <title>鯖江市の 医療施設・保育園・学校 センサー</title>
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="./lib/geolib.min.js"></script>
@@ -116,7 +117,7 @@
                         schema:label ?name;
                         geo:lat ?lat;
                         geo:long ?lng.
-                        filter(contains(str(?name), '保育') || contains(str(?name), '小学校')|| contains(str(?name), '中学校') || contains(str(?name), '高校'))
+                        filter(contains(str(?name), '保育') || contains(str(?name), '幼稚園') || contains(str(?name), '小学校')|| contains(str(?name), '中学校') || contains(str(?name), '高校'))
                         filter(?lat < %latmax% && ?lat > %latmin% && ?lng < %lngmax% && ?lng > %lngmin%)
                         filter(lang(?name) = 'ja')
                     }`
