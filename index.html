@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>鯖江市の 医療施設・保育園・学校 センサー</title>
+    <title>鯖江市の医療施設・保育園・学校</title>
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="./lib/geolib.min.js"></script>
@@ -23,7 +23,7 @@
 <body>
 
     <div id="app">
-        <h2>鯖江市の 医療施設・保育園・学校 センサー</h2>
+        <h2>鯖江市の医療施設・保育園・学校</h2>
         <div v-if="date">現在地: {{lat}},{{lng}} <small>({{date.toLocaleString()}} 更新)</small></div>
         <div v-else>位置情報が無効</div>
         <input type="text" v-model="keyword" placeholder="フィルター">
