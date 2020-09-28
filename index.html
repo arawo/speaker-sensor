@@ -23,7 +23,7 @@
 
     <div id="app">
         <h2>鯖江市の 医療施設・保育園・学校 センサー</h2>
-        <div v-if="date">現在地: {{lat}}, {{lng}} ({{date}} 更新)</div>
+        <div v-if="date">現在地: {{lat}}, {{lng}} ({{formateddate}} 更新)</div>
         <div v-else>位置情報が無効</div>
         <input type="text" v-model="keyword" placeholder="フィルター">
         <input type="text" v-model="nearbydst" placeholder="検知範囲(m)">
@@ -67,13 +67,7 @@
             mounted: async function () {
 
                 navigator.geolocation.watchPosition(
-                    function(position) {
-                        this.lat = position.coords.latitude;
-                        this.lng = position.coords.longitude;
-                        this.accu = position.coords.accuracy;
-                        this.date = new Date(position.timestamp);
-                        console.log(position)
-                    },
+                    this.geocallback,
                     function(error){},
                     {enableHighAccuracy: true});
 
@@ -143,6 +137,12 @@
                         return { nearby: true }
                     }
                     return {}
+                },
+                geocallback: function (position) {
+                        this.lat = position.coords.latitude
+                        this.lng = position.coords.longitude
+                        this.accu = position.coords.accuracy
+                        this.date = new Date(position.timestamp)
                 }
             },
             computed: {
@@ -171,6 +171,9 @@
                     }
                     console.log(res)
                     return res
+                },
+                formateddate: function() {
+                    return formatDate(date, 'MM/dd HH:mm:ss')
                 }
             }
         })
