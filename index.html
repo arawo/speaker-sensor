@@ -7,10 +7,12 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="./lib/geolib.min.js"></script>
     <style type="text/css">
+        body {
+            font-size: larger
+        }
         .nearby {
             background-color: #ffbb44
         }
-
         .warning {
             background-color: #ff6688
         }
@@ -20,11 +22,12 @@
 <body>
 
     <div id="app">
-        <h1>鯖江市の 医療施設・保育園・学校 センサー</h1>
-        <div v-if="date">現在地: {{lat}}, {{lng}}</div>
+        <h2>鯖江市の 医療施設・保育園・学校 センサー</h2>
+        <div v-if="date">現在地: {{lat}}, {{lng}} ({{date}} 更新)</div>
+        <div v-else>位置情報が無効</div>
         <input type="text" v-model="keyword" placeholder="フィルター">
-        <input type="text" v-model="nearbydst" placeholder="検知範囲">
-        <input type="text" v-model="warndst" placeholder="警告範囲">
+        <input type="text" v-model="nearbydst" placeholder="検知範囲(m)">
+        <input type="text" v-model="warndst" placeholder="警告範囲(m)">
         <div>件数：{{ filteredlist.length }} / {{ list.length }}</div>
         <transition-group name="list" tag="table">
             <todo-item v-for="item in filteredlist" :key="item.uri.value" :uri="item.uri.value" :name="item.name.value"
@@ -47,24 +50,32 @@
         new Vue({
             el: '#app',
             data: {
+                latmin: 35.9286453,
+                latmax: 36.0011173,
+                lngmin: 136.122566,
+                lngmax: 136.335872,
+
                 list: [],
                 keyword: "",
                 nearbydst: 600,
                 warndst: 300,
                 lat: 35.943297,
                 lng: 136.1865133,
-                latmin: 35.9286453,
-                latmax: 36.0011173,
-                lngmin: 136.1225663,
-                lngmax: 136.3358720,
                 accu: 0,
                 date: null,
             },
             mounted: async function () {
 
-                setInterval(() => {
-                    this.updategeom()
-                }, 3000)
+                navigator.geolocation.watchPosition(
+                    function(position) {
+                        this.lat = position.coords.latitude;
+                        this.lng = position.coords.longitude;
+                        this.accu = position.coords.accuracy;
+                        this.date = new Date(position.timestamp);
+                        console.log(position)
+                    },
+                    function(error){},
+                    {enableHighAccuracy: true});
 
                 const q1 = this.getmedicalinstitutequery()
                 const q2 = this.getschoolquery()
@@ -132,20 +143,11 @@
                         return { nearby: true }
                     }
                     return {}
-                },
-                updategeom: function () {
-                    navigator.geolocation.getCurrentPosition(function (position) {
-                        this.lat = position.coords.latitude;
-                        this.lng = position.coords.longitude;
-                        this.accu = position.coords.accuracy;
-                        this.date = new Date(position.timestamp);
-                    });
                 }
             },
             computed: {
                 listwithdist: function () {
                     const res = []
-                    const dist = this.lastGeom
                     for (const i of this.list) {
                         i.dst = {
                             value: geolib.getDistance(
