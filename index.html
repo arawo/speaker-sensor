@@ -21,10 +21,10 @@
 
     <div id="app">
         <h1>鯖江市の 医療施設・保育園・学校 センサー</h1>
+        <div v-if="date">現在地: {{lat}}, {{lng}}</div>
         <input type="text" v-model="keyword" placeholder="フィルター">
-        <input type="text" v-model="nearbydst" placeholder="検知範囲(m)">
-        <input type="text" v-model="warndst" placeholder="警告範囲(m)">
-        {{nearbydst}} {{warndst}}
+        <input type="text" v-model="nearbydst" placeholder="検知範囲">
+        <input type="text" v-model="warndst" placeholder="警告範囲">
         <div>件数：{{ filteredlist.length }} / {{ list.length }}</div>
         <transition-group name="list" tag="table">
             <todo-item v-for="item in filteredlist" :key="item.uri.value" :uri="item.uri.value" :name="item.name.value"
@@ -53,6 +53,10 @@
                 warndst: 300,
                 lat: 35.943297,
                 lng: 136.1865133,
+                latmin: 35.9286453,
+                latmax: 36.0011173,
+                lngmin: 136.1225663,
+                lngmax: 136.3358720,
                 accu: 0,
                 date: null,
             },
@@ -82,7 +86,13 @@
                         geo:lat ?lat;
                         geo:long ?lng.
                         filter(contains(str(?name),'病院'))
+                        filter(?lat < %latmax% && ?lat > %latmin% && ?lng < %lngmax% && ?lng > %lngmin%)
+                        filter(lang(?name) = 'ja')
                     }`
+                    query = query.replace("%latmax%", this.latmax)
+                    query = query.replace("%latmin%", this.latmin)
+                    query = query.replace("%lngmax%", this.lngmax)
+                    query = query.replace("%lngmin%", this.lngmin)
 
                     // querySAPRQL
                     const baseurl = "https://sparql.odp.jig.jp/data/sparql"
@@ -100,7 +110,13 @@
                         geo:lat ?lat;
                         geo:long ?lng.
                         filter(contains(str(?name), '保育') || contains(str(?name), '小学校')|| contains(str(?name), '中学校') || contains(str(?name), '高校'))
+                        filter(?lat < %latmax% && ?lat > %latmin% && ?lng < %lngmax% && ?lng > %lngmin%)
+                        filter(lang(?name) = 'ja')
                     }`
+                    query = query.replace("%latmax%", this.latmax)
+                    query = query.replace("%latmin%", this.latmin)
+                    query = query.replace("%lngmax%", this.lngmax)
+                    query = query.replace("%lngmin%", this.lngmin)
 
                     // querySAPRQL
                     const baseurl = "https://sparql.odp.jig.jp/data/sparql"
