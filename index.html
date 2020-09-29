@@ -35,7 +35,8 @@
             <input type="text" v-model="keyword" placeholder="フィルター">
             <input type="text" v-model="nearbydst" placeholder="検知範囲(m)">
             <input type="text" v-model="warndst" placeholder="警告範囲(m)">
-            <a href="" onclick="(document.body.requestFullscreen || document.body.mozRequestFullScreen || document.body.webkitRequestFullScreen || documnet.body.msRequestFullscreen).call(document.body)">全画面</a>
+            <a href="#" onclick="(document.body.requestFullscreen || document.body.mozRequestFullScreen || document.body.webkitRequestFullScreen || documnet.body.msRequestFullscreen).call(document.body)">全画面</a>
+            <a href="#" onclick="(document.exitFullscreen || document.body.mozCancelFullScreen || document.body.webkitExitFullscreen || document.body.msExitFullscreen).call(document.body)">全画面終了</a>
         </section>
         <section><small>件数：{{ filteredlist.length }} / {{ list.length }}</small></section>
         <transition-group name="list" tag="table">
@@ -67,6 +68,7 @@
                 lngmax: 136.335872,
 
                 list: [],
+                warnedlist: [],
                 keyword: "",
                 nearbydst: 600,
                 warndst: 300,
