@@ -9,13 +9,18 @@
     <script src="./lib/geolib.min.js"></script>
     <style type="text/css">
         body {
-            font-size: larger
+            font-size: larger;
+        }
+        #app {
+            background-color: white;
+            width: fit-content;
+            margin: 0 auto;
         }
         .nearby {
-            background-color: #ffbb44
+            background-color: #ffbb44;
         }
         .warning {
-            background-color: #ff6688
+            background-color: #ff6688;
         }
     </style>
 </head>
@@ -24,12 +29,15 @@
 
     <div id="app">
         <h2>鯖江市の医療施設・保育園・学校</h2>
-        <div v-if="date">現在地: {{lat}},{{lng}} <small>({{date.toLocaleString()}} 更新)</small></div>
-        <div v-else>位置情報が無効</div>
-        <input type="text" v-model="keyword" placeholder="フィルター">
-        <input type="text" v-model="nearbydst" placeholder="検知範囲(m)">
-        <input type="text" v-model="warndst" placeholder="警告範囲(m)">
-        <div>件数：{{ filteredlist.length }} / {{ list.length }}</div>
+        <section v-if="date">現在地: {{lat}},{{lng}} <small>({{date.toLocaleString()}} 更新)</small></section>
+        <section v-else>位置情報が無効</section>
+        <section>
+            <input type="text" v-model="keyword" placeholder="フィルター">
+            <input type="text" v-model="nearbydst" placeholder="検知範囲(m)">
+            <input type="text" v-model="warndst" placeholder="警告範囲(m)">
+            <a href="" onclick="(document.body.requestFullscreen || document.body.mozRequestFullScreen || document.body.webkitRequestFullScreen || documnet.body.msRequestFullscreen).call(document.body)">全画面</a>
+        </section>
+        <section><small>件数：{{ filteredlist.length }} / {{ list.length }}</small></section>
         <transition-group name="list" tag="table">
             <todo-item v-for="item in filteredlist" :key="item.uri.value" :uri="item.uri.value" :name="item.name.value"
                 :lat="item.lat.value" :lng="item.lng.value" :dst="item.dst.value"
@@ -117,7 +125,7 @@
                         schema:label ?name;
                         geo:lat ?lat;
                         geo:long ?lng.
-                        filter(contains(str(?name), '保育') || contains(str(?name), '幼稚園') || contains(str(?name), '小学校')|| contains(str(?name), '中学校') || contains(str(?name), '高校'))
+                        filter(contains(str(?name), '保育') || contains(str(?name), '幼稚園') || contains(str(?name), '学校') || contains(str(?name), '高校') || contains(str(?name), '大学'))
                         filter(?lat < %latmax% && ?lat > %latmin% && ?lng < %lngmax% && ?lng > %lngmin%)
                         filter(lang(?name) = 'ja')
                     }`
